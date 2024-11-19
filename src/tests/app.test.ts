@@ -7,7 +7,6 @@ describe('GET /time', () => {
         expect(response.status).toBe(200);
         expect(response.body).toHaveProperty('utcTime');
 
-        // Перевіряємо, що повернутий час є коректним ISO строковим значенням
         const utcTime = new Date(response.body.utcTime);
         expect(utcTime.toISOString()).toBe(response.body.utcTime);
     });
