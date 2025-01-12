@@ -1,13 +1,34 @@
 import request from 'supertest';
-import app from '../app';
+import app, { getTime } from '../app';
+
+jest.mock('../app', () => {
+    const originalModule = jest.requireActual('../app');
+    return {
+        ...originalModule,
+        getTime: jest.fn(),
+    };
+});
 
 describe('GET /time', () => {
-    it('should return the current UTC time', async () => {
-        const response = await request(app).get('/time');
-        expect(response.status).toBe(200);
-        expect(response.body).toHaveProperty('utcTime');
+    it('should return mocked UTC time', async () => {
+        const mockedTime = '2025-01-01T12:00:00.000Z';
+        (getTime as jest.Mock).mockReturnValue(mockedTime);
 
-        const utcTime = new Date(response.body.utcTime);
-        expect(utcTime.toISOString()).toBe(response.body.utcTime);
+        const response = await request(app).get('/time');
+
+        expect(response.status).toBe(200);
+
+        expect(response.body).toHaveProperty('utcTime', mockedTime);
+    });
+
+    it('should handle multiple requests', async () => {
+        const mockedTime = '2025-01-01T12:00:00.000Z';
+        (getTime as jest.Mock).mockReturnValue(mockedTime);
+
+        const response1 = await request(app).get('/time');
+        expect(response1.body.utcTime).toBe(mockedTime);
+
+        const response2 = await request(app).get('/time');
+        expect(response2.body.utcTime).toBe(mockedTime);
     });
 });
